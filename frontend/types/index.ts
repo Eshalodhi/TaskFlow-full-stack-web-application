@@ -153,6 +153,9 @@ export interface AuthContextValue {
   register: (name: string, email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   loginWithOAuth: (provider: 'google' | 'github') => void;
+  forgotPassword: (email: string) => Promise<void>;
+  resetPassword: (token: string, password: string) => Promise<void>;
+  handleOAuthCallback: (token: string) => Promise<void>;
 }
 
 // =============================================================================

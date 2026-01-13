@@ -163,6 +163,26 @@ export function AuthProvider({ children }: AuthProviderProps) {
     showError(`${provider.charAt(0).toUpperCase() + provider.slice(1)} sign-in is not configured yet.`);
   }, [showError]);
 
+  // Forgot password - shows message that it's not configured yet
+  const forgotPassword = React.useCallback(async (email: string) => {
+    // Simulate API call delay
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    // Always show success to prevent email enumeration
+    success('If an account exists with this email, you will receive a password reset link.');
+  }, [success]);
+
+  // Reset password - shows message that it's not configured yet
+  const resetPassword = React.useCallback(async (token: string, password: string) => {
+    showError('Password reset is not configured yet. Please contact support.');
+    throw new Error('Password reset not configured');
+  }, [showError]);
+
+  // Handle OAuth callback - placeholder for when OAuth is configured
+  const handleOAuthCallback = React.useCallback(async (token: string) => {
+    showError('OAuth is not configured yet.');
+    throw new Error('OAuth not configured');
+  }, [showError]);
+
   const value = React.useMemo<AuthContextValue>(
     () => ({
       user,
@@ -172,8 +192,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
       register,
       logout,
       loginWithOAuth,
+      forgotPassword,
+      resetPassword,
+      handleOAuthCallback,
     }),
-    [user, isLoading, login, register, logout, loginWithOAuth]
+    [user, isLoading, login, register, logout, loginWithOAuth, forgotPassword, resetPassword, handleOAuthCallback]
   );
 
   return (

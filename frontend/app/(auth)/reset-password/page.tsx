@@ -15,9 +15,9 @@ import {
   calculatePasswordStrength,
   getPasswordStrengthColor,
 } from '@/lib/validations';
-import { CheckCircle, Eye, EyeOff, ArrowLeft, AlertCircle } from 'lucide-react';
+import { CheckCircle, Eye, EyeOff, ArrowLeft, AlertCircle, Loader2 } from 'lucide-react';
 
-export default function ResetPasswordPage() {
+function ResetPasswordContent() {
   const searchParams = useSearchParams();
   const token = searchParams.get('token');
   const { resetPassword, isLoading } = useAuth();
@@ -215,5 +215,21 @@ export default function ResetPasswordPage() {
         </div>
       </motion.div>
     </div>
+  );
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <React.Suspense
+      fallback={
+        <div className="w-full max-w-md px-4">
+          <div className="glass rounded-2xl shadow-xl p-6 sm:p-8 flex items-center justify-center">
+            <Loader2 className="w-8 h-8 animate-spin text-primary-500" />
+          </div>
+        </div>
+      }
+    >
+      <ResetPasswordContent />
+    </React.Suspense>
   );
 }

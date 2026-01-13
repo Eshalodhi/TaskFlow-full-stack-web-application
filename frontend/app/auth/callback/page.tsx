@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 import { useAuth } from '@/hooks/use-auth';
 import { CheckCircle, Loader2 } from 'lucide-react';
 
-export default function OAuthCallbackPage() {
+function OAuthCallbackContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { handleOAuthCallback } = useAuth();
@@ -76,5 +76,19 @@ export default function OAuthCallbackPage() {
         </div>
       </motion.div>
     </div>
+  );
+}
+
+export default function OAuthCallbackPage() {
+  return (
+    <React.Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-background">
+          <Loader2 className="w-8 h-8 animate-spin text-primary-500" />
+        </div>
+      }
+    >
+      <OAuthCallbackContent />
+    </React.Suspense>
   );
 }
