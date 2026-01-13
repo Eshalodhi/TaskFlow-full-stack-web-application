@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { ToastProvider } from '@/components/providers/toast-provider';
 import { ThemeProvider } from '@/components/providers/theme-provider';
+import { AuthProvider } from '@/components/providers/auth-provider';
 
 // =============================================================================
 // Metadata
@@ -85,7 +86,9 @@ export default function RootLayout({
         </a>
         <ThemeProvider defaultTheme="light" enableTransitions>
           <ToastProvider position="top-right">
-            {children}
+            <AuthProvider>
+              {children}
+            </AuthProvider>
           </ToastProvider>
         </ThemeProvider>
       </body>

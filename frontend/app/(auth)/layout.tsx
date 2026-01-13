@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import { AuthProvider } from '@/components/providers/auth-provider';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { CheckCircle } from 'lucide-react';
 
@@ -11,8 +10,7 @@ export default function AuthLayout({
   children: React.ReactNode;
 }) {
   return (
-    <AuthProvider>
-      <div className="min-h-screen flex flex-col relative">
+    <div className="min-h-screen flex flex-col relative">
         {/* Header */}
         <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-sm border-b border-border">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -57,6 +55,5 @@ export default function AuthLayout({
           </div>
         </footer>
       </div>
-    </AuthProvider>
   );
 }
