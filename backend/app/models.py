@@ -18,7 +18,9 @@ class User(SQLModel, table=True):
         id: Unique user identifier (UUID string)
         email: User email (unique, stored lowercase)
         name: User display name
-        password_hash: Bcrypt hashed password (NEVER store plaintext)
+        password_hash: Bcrypt hashed password (NEVER store plaintext, optional for OAuth users)
+        oauth_provider: OAuth provider name (google, github) - null for email/password users
+        oauth_id: User ID from OAuth provider - null for email/password users
         created_at: Account creation timestamp
     """
 
@@ -27,7 +29,9 @@ class User(SQLModel, table=True):
     id: str = Field(primary_key=True)
     email: str = Field(unique=True, index=True)
     name: str
-    password_hash: str
+    password_hash: Optional[str] = Field(default=None)  # Optional for OAuth users
+    oauth_provider: Optional[str] = Field(default=None, index=True)  # google, github, etc.
+    oauth_id: Optional[str] = Field(default=None)  # ID from OAuth provider
     created_at: datetime = Field(default_factory=utc_now)
 
 

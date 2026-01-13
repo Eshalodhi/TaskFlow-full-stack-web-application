@@ -6,7 +6,6 @@ export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
     const code = searchParams.get('code');
-    const state = searchParams.get('state');
     const error = searchParams.get('error');
 
     // Handle OAuth error from Google
@@ -16,27 +15,20 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    if (!code || !state) {
+    if (!code) {
       return NextResponse.redirect(
-        new URL('/auth/callback?error=Missing OAuth parameters', request.url)
+        new URL('/auth/callback?error=Missing authorization code', request.url)
       );
     }
 
-    // Forward to backend OAuth callback
-    const backendCallbackUrl = `${BACKEND_URL}/auth/callback/google?code=${encodeURIComponent(code)}&state=${encodeURIComponent(state)}`;
-    const response = await fetch(backendCallbackUrl, {
-      redirect: 'manual', // Don't follow redirects automatically
+    // Exchange code with backend
+    const response = await fetch(`${BACKEND_URL}/auth/google/callback?code=${encodeURIComponent(code)}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
     });
 
-    // Backend should redirect with token
-    if (response.status === 307 || response.status === 302) {
-      const location = response.headers.get('location');
-      if (location) {
-        return NextResponse.redirect(location);
-      }
-    }
-
-    // If backend returns error
     if (!response.ok) {
       const data = await response.json().catch(() => ({ detail: 'OAuth failed' }));
       return NextResponse.redirect(
@@ -44,8 +36,20 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Fallback - shouldn't reach here normally
-    return NextResponse.redirect(new URL('/auth/callback?error=Unexpected response', request.url));
+    // Get token from backend response
+    const data = await response.json();
+    const token = data.token;
+
+    if (!token) {
+      return NextResponse.redirect(
+        new URL('/auth/callback?error=No token received', request.url)
+      );
+    }
+
+    // Redirect to callback page with token
+    return NextResponse.redirect(
+      new URL(`/auth/callback?token=${encodeURIComponent(token)}&provider=google`, request.url)
+    );
   } catch (error) {
     console.error('Google OAuth callback error:', error);
     return NextResponse.redirect(

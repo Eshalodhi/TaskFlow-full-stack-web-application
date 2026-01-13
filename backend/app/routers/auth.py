@@ -1,17 +1,30 @@
-"""Authentication API endpoints - register and login."""
+"""Authentication API endpoints - register, login, and OAuth."""
 
 import uuid
 from datetime import datetime, timedelta, timezone
+from urllib.parse import urlencode
 
 import bcrypt
+import httpx
 import jwt
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import RedirectResponse
 from sqlmodel import Session, select
 
-from app.config import BETTER_AUTH_SECRET
+from app.config import (
+    BETTER_AUTH_SECRET,
+    GOOGLE_CLIENT_ID,
+    GOOGLE_CLIENT_SECRET,
+    FRONTEND_URL,
+)
 from app.database import get_session
 from app.models import User
 from app.schemas import RegisterDTO, LoginDTO, AuthResponseDTO, UserDTO
+
+# Google OAuth URLs
+GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth"
+GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token"
+GOOGLE_USERINFO_URL = "https://www.googleapis.com/oauth2/v2/userinfo"
 
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
@@ -135,6 +148,13 @@ async def login(
             detail="Invalid email or password"
         )
 
+    # Check if user has a password (OAuth users may not)
+    if not user.password_hash:
+        raise HTTPException(
+            status_code=401,
+            detail="This account uses Google sign-in. Please sign in with Google."
+        )
+
     # Verify password
     if not verify_password(data.password, user.password_hash):
         raise HTTPException(
@@ -147,5 +167,172 @@ async def login(
 
     return AuthResponseDTO(
         user=UserDTO(id=user.id, email=user.email, name=user.name),
+        token=token,
+    )
+
+
+# =============================================================================
+# GET /auth/google - Redirect to Google OAuth
+# =============================================================================
+
+@router.get("/google")
+async def google_oauth_redirect():
+    """
+    Redirect user to Google OAuth consent screen.
+
+    Frontend calls this endpoint, which redirects to Google.
+    After user consents, Google redirects back to /auth/google/callback.
+    """
+    if not GOOGLE_CLIENT_ID or not GOOGLE_CLIENT_SECRET:
+        raise HTTPException(
+            status_code=503,
+            detail="Google OAuth is not configured"
+        )
+
+    # Build the callback URL (backend endpoint)
+    callback_url = f"{FRONTEND_URL}/api/auth/callback/google"
+
+    # OAuth parameters
+    params = {
+        "client_id": GOOGLE_CLIENT_ID,
+        "redirect_uri": callback_url,
+        "response_type": "code",
+        "scope": "openid email profile",
+        "access_type": "offline",
+        "prompt": "consent",
+    }
+
+    auth_url = f"{GOOGLE_AUTH_URL}?{urlencode(params)}"
+    return RedirectResponse(url=auth_url)
+
+
+# =============================================================================
+# POST /auth/google/callback - Handle Google OAuth callback
+# =============================================================================
+
+@router.post("/google/callback")
+async def google_oauth_callback(
+    code: str,
+    session: Session = Depends(get_session),
+) -> AuthResponseDTO:
+    """
+    Handle Google OAuth callback.
+
+    - Exchanges authorization code for access token
+    - Fetches user info from Google
+    - Creates or updates user in database
+    - Returns JWT token
+    """
+    if not GOOGLE_CLIENT_ID or not GOOGLE_CLIENT_SECRET:
+        raise HTTPException(
+            status_code=503,
+            detail="Google OAuth is not configured"
+        )
+
+    callback_url = f"{FRONTEND_URL}/api/auth/callback/google"
+
+    # Exchange authorization code for access token
+    async with httpx.AsyncClient() as client:
+        token_response = await client.post(
+            GOOGLE_TOKEN_URL,
+            data={
+                "client_id": GOOGLE_CLIENT_ID,
+                "client_secret": GOOGLE_CLIENT_SECRET,
+                "code": code,
+                "grant_type": "authorization_code",
+                "redirect_uri": callback_url,
+            },
+        )
+
+        if token_response.status_code != 200:
+            raise HTTPException(
+                status_code=400,
+                detail="Failed to exchange authorization code"
+            )
+
+        token_data = token_response.json()
+        access_token = token_data.get("access_token")
+
+        if not access_token:
+            raise HTTPException(
+                status_code=400,
+                detail="No access token received from Google"
+            )
+
+        # Fetch user info from Google
+        userinfo_response = await client.get(
+            GOOGLE_USERINFO_URL,
+            headers={"Authorization": f"Bearer {access_token}"},
+        )
+
+        if userinfo_response.status_code != 200:
+            raise HTTPException(
+                status_code=400,
+                detail="Failed to fetch user info from Google"
+            )
+
+        userinfo = userinfo_response.json()
+
+    # Extract user data from Google response
+    google_id = userinfo.get("id")
+    email = userinfo.get("email", "").lower()
+    name = userinfo.get("name", email.split("@")[0])
+
+    if not google_id or not email:
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid user data from Google"
+        )
+
+    # Check if user exists (by OAuth ID or email)
+    existing_user = session.exec(
+        select(User).where(
+            (User.oauth_provider == "google") & (User.oauth_id == google_id)
+        )
+    ).first()
+
+    if not existing_user:
+        # Check if user exists with same email (maybe registered with password)
+        existing_user = session.exec(
+            select(User).where(User.email == email)
+        ).first()
+
+        if existing_user:
+            # Link OAuth to existing account
+            existing_user.oauth_provider = "google"
+            existing_user.oauth_id = google_id
+            session.add(existing_user)
+            session.commit()
+            session.refresh(existing_user)
+
+    if existing_user:
+        # User exists, generate token
+        token = create_access_token(existing_user.id, existing_user.email, remember_me=True)
+        return AuthResponseDTO(
+            user=UserDTO(id=existing_user.id, email=existing_user.email, name=existing_user.name),
+            token=token,
+        )
+
+    # Create new user
+    user_id = str(uuid.uuid4())
+    new_user = User(
+        id=user_id,
+        email=email,
+        name=name,
+        password_hash=None,  # OAuth users don't have password
+        oauth_provider="google",
+        oauth_id=google_id,
+        created_at=datetime.now(timezone.utc),
+    )
+
+    session.add(new_user)
+    session.commit()
+    session.refresh(new_user)
+
+    # Generate JWT token
+    token = create_access_token(new_user.id, new_user.email, remember_me=True)
+
+    return AuthResponseDTO(
+        user=UserDTO(id=new_user.id, email=new_user.email, name=new_user.name),
         token=token,
     )

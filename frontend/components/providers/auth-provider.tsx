@@ -158,9 +158,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
     router.push('/');
   }, [router, success]);
 
-  // OAuth login - shows message that it's not configured yet
+  // OAuth login - redirects to OAuth provider
   const loginWithOAuth = React.useCallback((provider: 'google' | 'github') => {
-    showError(`${provider.charAt(0).toUpperCase() + provider.slice(1)} sign-in is not configured yet.`);
+    if (provider === 'google') {
+      // Redirect to backend Google OAuth endpoint
+      const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      window.location.href = `${backendUrl}/auth/google`;
+    } else {
+      showError(`${provider.charAt(0).toUpperCase() + provider.slice(1)} sign-in is not configured yet.`);
+    }
   }, [showError]);
 
   // Forgot password - shows message that it's not configured yet
@@ -177,11 +183,31 @@ export function AuthProvider({ children }: AuthProviderProps) {
     throw new Error('Password reset not configured');
   }, [showError]);
 
-  // Handle OAuth callback - placeholder for when OAuth is configured
+  // Handle OAuth callback - saves token and user data
   const handleOAuthCallback = React.useCallback(async (token: string) => {
-    showError('OAuth is not configured yet.');
-    throw new Error('OAuth not configured');
-  }, [showError]);
+    try {
+      // Decode the JWT to get user info (basic decode, not verification)
+      const base64Url = token.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const payload = JSON.parse(window.atob(base64));
+
+      // Store the token
+      localStorage.setItem('token', token);
+
+      // Set user from token payload
+      setUser({
+        id: payload.sub,
+        email: payload.email,
+        name: payload.name || payload.email.split('@')[0],
+      });
+
+      success('Signed in successfully!');
+      router.push('/dashboard');
+    } catch (error) {
+      showError('Failed to complete sign in. Please try again.');
+      throw error;
+    }
+  }, [router, success, showError]);
 
   const value = React.useMemo<AuthContextValue>(
     () => ({
