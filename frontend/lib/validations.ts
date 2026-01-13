@@ -66,12 +66,47 @@ export const registerSchema = z.object({
   confirmPassword: z
     .string()
     .min(1, 'Please confirm your password'),
+  termsAccepted: z
+    .boolean()
+    .refine((val) => val === true, {
+      message: 'You must accept the Terms of Service and Privacy Policy',
+    }),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords don't match",
   path: ['confirmPassword'],
 });
 
 export type RegisterInput = z.infer<typeof registerSchema>;
+
+/**
+ * Schema for forgot password form
+ */
+export const forgotPasswordSchema = z.object({
+  email: z
+    .string()
+    .min(1, 'Email is required')
+    .email('Please enter a valid email address'),
+});
+
+export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
+
+/**
+ * Schema for reset password form
+ */
+export const resetPasswordSchema = z.object({
+  password: z
+    .string()
+    .min(6, 'Password must be at least 6 characters')
+    .max(100, 'Password must be under 100 characters'),
+  confirmPassword: z
+    .string()
+    .min(1, 'Please confirm your password'),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ['confirmPassword'],
+});
+
+export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
 
 // =============================================================================
 // Password Strength Utility

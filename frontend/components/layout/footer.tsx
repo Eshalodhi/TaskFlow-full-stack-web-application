@@ -17,7 +17,7 @@ export function Footer({ variant = 'app', className }: FooterProps) {
 
   if (variant === 'app') {
     return (
-      <footer className={`py-6 border-t border-neutral-200 dark:border-[#334155] ${className || ''}`}>
+      <footer className={`py-6 border-t border-border ${className || ''}`}>
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             {/* Logo */}
@@ -29,7 +29,7 @@ export function Footer({ variant = 'app', className }: FooterProps) {
             </div>
 
             {/* Links */}
-            <nav className="flex items-center gap-6 text-sm text-neutral-500 dark:text-[#94A3B8]">
+            <nav className="flex items-center gap-6 text-sm text-muted-foreground">
               <Link href="/" className="hover:text-foreground transition-colors">
                 Home
               </Link>
@@ -42,7 +42,7 @@ export function Footer({ variant = 'app', className }: FooterProps) {
             </nav>
 
             {/* Copyright */}
-            <p className="text-xs text-neutral-400 dark:text-[#64748B]">
+            <p className="text-xs text-muted-foreground">
               &copy; {currentYear} TaskFlow
             </p>
           </div>
@@ -53,7 +53,7 @@ export function Footer({ variant = 'app', className }: FooterProps) {
 
   // Landing page footer (full version)
   return (
-    <footer className={`py-12 border-t border-neutral-200 dark:border-[#334155] ${className || ''}`}>
+    <footer className={`py-12 border-t border-border ${className || ''}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col md:flex-row items-center justify-between gap-6">
           {/* Logo */}
@@ -65,7 +65,7 @@ export function Footer({ variant = 'app', className }: FooterProps) {
           </div>
 
           {/* Links */}
-          <nav className="flex items-center gap-6 text-sm text-neutral-500 dark:text-[#94A3B8]">
+          <nav className="flex items-center gap-6 text-sm text-muted-foreground">
             <Link href="#features" className="hover:text-foreground transition-colors">
               Features
             </Link>
@@ -83,7 +83,7 @@ export function Footer({ variant = 'app', className }: FooterProps) {
               href="https://github.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-neutral-400 dark:text-[#64748B] hover:text-foreground transition-colors"
+              className="text-muted-foreground hover:text-foreground transition-colors"
             >
               <Github className="w-5 h-5" />
             </a>
@@ -91,14 +91,14 @@ export function Footer({ variant = 'app', className }: FooterProps) {
               href="https://twitter.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-neutral-400 dark:text-[#64748B] hover:text-foreground transition-colors"
+              className="text-muted-foreground hover:text-foreground transition-colors"
             >
               <Twitter className="w-5 h-5" />
             </a>
           </div>
         </div>
 
-        <div className="mt-8 text-center text-sm text-neutral-400 dark:text-[#64748B]">
+        <div className="mt-8 text-center text-sm text-muted-foreground">
           <p>&copy; {currentYear} TaskFlow. Built for Panaversity Hackathon Phase II.</p>
         </div>
       </div>

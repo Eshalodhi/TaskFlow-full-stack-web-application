@@ -10,7 +10,7 @@ import toast from 'react-hot-toast';
 // Types
 // =============================================================================
 
-interface UseTasksReturn {
+interface TasksContextValue {
   tasks: Task[];
   stats: TaskStats;
   isLoading: boolean;
@@ -25,18 +25,19 @@ interface UseTasksReturn {
 }
 
 // =============================================================================
-// Hook Implementation
+// Context
 // =============================================================================
 
-export function useTasks(): UseTasksReturn {
+const TasksContext = React.createContext<TasksContextValue | null>(null);
+
+// =============================================================================
+// Provider Component
+// =============================================================================
+
+export function TasksProvider({ children }: { children: React.ReactNode }) {
   const [tasks, setTasks] = React.useState<Task[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
-
-  // Debug: log when tasks change
-  React.useEffect(() => {
-    console.log('[useTasks] Tasks state changed, count:', tasks.length, tasks.map(t => t.id));
-  }, [tasks]);
 
   // Compute stats from tasks
   const stats = React.useMemo(() => computeStats(tasks), [tasks]);
@@ -73,27 +74,15 @@ export function useTasks(): UseTasksReturn {
   // Create task
   const createTask = React.useCallback(async (data: CreateTaskRequest): Promise<Task | null> => {
     try {
-      console.log('[createTask] Starting with data:', data);
       const newTask = await api.createTask(data);
-      console.log('[createTask] API returned:', newTask);
 
-      // Optimistic update - add to beginning of list
-      setTasks((prev) => {
-        console.log('[createTask] Previous tasks count:', prev.length);
-        // Ensure we don't add duplicates
-        const exists = prev.some((t) => t.id === newTask.id);
-        if (exists) {
-          console.log('[createTask] Task already exists, skipping');
-          return prev;
-        }
-        const updated = [newTask, ...prev];
-        console.log('[createTask] Updated tasks count:', updated.length);
-        return updated;
-      });
+      // Refetch all tasks to ensure UI is in sync with server
+      const response = await api.getTasks();
+      setTasks(response.tasks);
+
       toast.success('Task created successfully');
       return newTask;
     } catch (err) {
-      console.error('[createTask] Error:', err);
       if (err instanceof ApiError) {
         toast.error(err.detail);
       } else {
@@ -108,8 +97,7 @@ export function useTasks(): UseTasksReturn {
     taskId: number,
     data: UpdateTaskRequest
   ): Promise<Task | null> => {
-    // Optimistic update
-    const previousTasks = tasks;
+    // Optimistic update for immediate feedback
     setTasks((prev) =>
       prev.map((task) =>
         task.id === taskId ? { ...task, ...data } : task
@@ -118,14 +106,18 @@ export function useTasks(): UseTasksReturn {
 
     try {
       const updatedTask = await api.updateTask(taskId, data);
-      setTasks((prev) =>
-        prev.map((task) => (task.id === taskId ? updatedTask : task))
-      );
+
+      // Refetch to ensure sync
+      const response = await api.getTasks();
+      setTasks(response.tasks);
+
       toast.success('Task updated successfully');
       return updatedTask;
     } catch (err) {
-      // Rollback on error
-      setTasks(previousTasks);
+      // Refetch to restore correct state
+      const response = await api.getTasks();
+      setTasks(response.tasks);
+
       if (err instanceof ApiError) {
         toast.error(err.detail);
       } else {
@@ -133,21 +125,27 @@ export function useTasks(): UseTasksReturn {
       }
       return null;
     }
-  }, [tasks]);
+  }, []);
 
   // Delete task
   const deleteTask = React.useCallback(async (taskId: number): Promise<boolean> => {
-    // Optimistic update
-    const previousTasks = tasks;
+    // Optimistic update for immediate feedback
     setTasks((prev) => prev.filter((task) => task.id !== taskId));
 
     try {
       await api.deleteTask(taskId);
+
+      // Refetch to ensure sync
+      const response = await api.getTasks();
+      setTasks(response.tasks);
+
       toast.success('Task deleted successfully');
       return true;
     } catch (err) {
-      // Rollback on error
-      setTasks(previousTasks);
+      // Refetch to restore correct state
+      const response = await api.getTasks();
+      setTasks(response.tasks);
+
       if (err instanceof ApiError) {
         toast.error(err.detail);
       } else {
@@ -155,12 +153,11 @@ export function useTasks(): UseTasksReturn {
       }
       return false;
     }
-  }, [tasks]);
+  }, []);
 
   // Toggle complete
   const toggleComplete = React.useCallback(async (taskId: number): Promise<Task | null> => {
-    // Optimistic update
-    const previousTasks = tasks;
+    // Optimistic update for immediate feedback
     setTasks((prev) =>
       prev.map((task) =>
         task.id === taskId ? { ...task, is_completed: !task.is_completed } : task
@@ -169,13 +166,17 @@ export function useTasks(): UseTasksReturn {
 
     try {
       const updatedTask = await api.toggleComplete(taskId);
-      setTasks((prev) =>
-        prev.map((task) => (task.id === taskId ? updatedTask : task))
-      );
+
+      // Refetch to ensure sync
+      const response = await api.getTasks();
+      setTasks(response.tasks);
+
       return updatedTask;
     } catch (err) {
-      // Rollback on error
-      setTasks(previousTasks);
+      // Refetch to restore correct state
+      const response = await api.getTasks();
+      setTasks(response.tasks);
+
       if (err instanceof ApiError) {
         toast.error(err.detail);
       } else {
@@ -183,17 +184,40 @@ export function useTasks(): UseTasksReturn {
       }
       return null;
     }
-  }, [tasks]);
+  }, []);
 
-  return {
-    tasks,
-    stats,
-    isLoading,
-    error,
-    createTask,
-    updateTask,
-    deleteTask,
-    toggleComplete,
-    refetch: fetchTasks,
-  };
+  const value = React.useMemo(
+    () => ({
+      tasks,
+      stats,
+      isLoading,
+      error,
+      createTask,
+      updateTask,
+      deleteTask,
+      toggleComplete,
+      refetch: fetchTasks,
+    }),
+    [tasks, stats, isLoading, error, createTask, updateTask, deleteTask, toggleComplete, fetchTasks]
+  );
+
+  return (
+    <TasksContext.Provider value={value}>
+      {children}
+    </TasksContext.Provider>
+  );
+}
+
+// =============================================================================
+// Hook
+// =============================================================================
+
+export function useTasks(): TasksContextValue {
+  const context = React.useContext(TasksContext);
+
+  if (!context) {
+    throw new Error('useTasks must be used within a TasksProvider');
+  }
+
+  return context;
 }

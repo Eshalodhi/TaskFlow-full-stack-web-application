@@ -33,7 +33,7 @@ function Skeleton({
   return (
     <div
       className={cn(
-        'bg-neutral-200 dark:bg-neutral-700',
+        'bg-muted',
         variantClasses[variant],
         animationClasses[animation],
         className

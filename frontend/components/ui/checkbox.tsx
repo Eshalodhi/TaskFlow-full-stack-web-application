@@ -27,7 +27,9 @@ const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
     },
     ref
   ) => {
-    const inputId = id || React.useId();
+    // Always call useId unconditionally to satisfy React rules
+    const generatedId = React.useId();
+    const inputId = id || generatedId;
     const innerRef = React.useRef<HTMLInputElement>(null);
 
     // Handle indeterminate state
@@ -122,6 +124,11 @@ const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
                 disabled && 'opacity-50'
               )}>
                 {description}
+              </p>
+            )}
+            {error && (
+              <p className="text-sm text-error-500 mt-1" role="alert">
+                {error}
               </p>
             )}
           </div>

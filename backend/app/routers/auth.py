@@ -18,7 +18,8 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 # JWT settings
 JWT_ALGORITHM = "HS256"
-JWT_EXPIRATION_DAYS = 7
+JWT_EXPIRATION_DAYS_DEFAULT = 1
+JWT_EXPIRATION_DAYS_REMEMBER = 30
 
 
 def hash_password(password: str) -> str:
@@ -35,14 +36,15 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     return bcrypt.checkpw(password_bytes, hashed_bytes)
 
 
-def create_access_token(user_id: str, email: str) -> str:
+def create_access_token(user_id: str, email: str, remember_me: bool = False) -> str:
     """Create JWT access token with user_id in 'sub' claim."""
     now = datetime.now(timezone.utc)
+    expiration_days = JWT_EXPIRATION_DAYS_REMEMBER if remember_me else JWT_EXPIRATION_DAYS_DEFAULT
     payload = {
         "sub": user_id,
         "email": email,
         "iat": now,
-        "exp": now + timedelta(days=JWT_EXPIRATION_DAYS),
+        "exp": now + timedelta(days=expiration_days),
     }
     return jwt.encode(payload, BETTER_AUTH_SECRET, algorithm=JWT_ALGORITHM)
 
@@ -116,6 +118,7 @@ async def login(
     - Finds user by email (case-insensitive)
     - Verifies password with bcrypt
     - Returns generic error to prevent email enumeration
+    - Supports remember_me for extended session
     """
     # Normalize email
     email_lower = data.email.lower().strip()
@@ -139,8 +142,8 @@ async def login(
             detail="Invalid email or password"
         )
 
-    # Generate JWT token
-    token = create_access_token(user.id, user.email)
+    # Generate JWT token with remember_me support
+    token = create_access_token(user.id, user.email, remember_me=data.remember_me)
 
     return AuthResponseDTO(
         user=UserDTO(id=user.id, email=user.email, name=user.name),

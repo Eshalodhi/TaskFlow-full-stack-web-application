@@ -1,24 +1,7 @@
 import type { Metadata, Viewport } from 'next';
-import { Inter, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
 import { ToastProvider } from '@/components/providers/toast-provider';
 import { ThemeProvider } from '@/components/providers/theme-provider';
-
-// =============================================================================
-// Font Configuration
-// =============================================================================
-
-const inter = Inter({
-  subsets: ['latin'],
-  variable: '--font-inter',
-  display: 'swap',
-});
-
-const jetbrainsMono = JetBrains_Mono({
-  subsets: ['latin'],
-  variable: '--font-jetbrains',
-  display: 'swap',
-});
 
 // =============================================================================
 // Metadata
@@ -73,17 +56,19 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        {/* Prevent dark mode flash */}
+        {/* Prevent theme flash - default to light mode */}
         <script
           dangerouslySetInnerHTML={{
             __html: `
               (function() {
                 try {
                   const stored = localStorage.getItem('theme');
-                  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-                  const isDark = stored === 'dark' || (!stored && prefersDark);
+                  // Only apply dark mode if explicitly set to dark
+                  const isDark = stored === 'dark';
                   if (isDark) {
                     document.documentElement.classList.add('dark');
+                  } else {
+                    document.documentElement.classList.remove('dark');
                   }
                 } catch (e) {}
               })();
@@ -92,13 +77,13 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased min-h-screen bg-background text-foreground`}
+        className="font-sans antialiased min-h-screen bg-background text-foreground"
       >
         {/* Skip to main content link for accessibility */}
         <a href="#main-content" className="skip-link">
           Skip to main content
         </a>
-        <ThemeProvider defaultTheme="system" enableTransitions>
+        <ThemeProvider defaultTheme="light" enableTransitions>
           <ToastProvider position="top-right">
             {children}
           </ToastProvider>

@@ -41,11 +41,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const { success, error: showError } = useToast();
 
   const [user, setUser] = React.useState<User | null>(null);
-  const [isLoading, setIsLoading] = React.useState(true);
+  // Start with false to avoid hydration mismatch, then set true during client-side check
+  const [isLoading, setIsLoading] = React.useState(false);
+  const [isHydrated, setIsHydrated] = React.useState(false);
 
-  // Check for existing session on mount
+  // Check for existing session on mount (client-side only)
   React.useEffect(() => {
     const checkSession = async () => {
+      setIsLoading(true);
       try {
         const token = localStorage.getItem('access_token');
         const storedUser = localStorage.getItem('user');
@@ -59,20 +62,33 @@ export function AuthProvider({ children }: AuthProviderProps) {
         localStorage.removeItem('user');
       } finally {
         setIsLoading(false);
+        setIsHydrated(true);
       }
     };
 
     checkSession();
   }, []);
 
+  // Helper function to store auth data
+  const storeAuthData = React.useCallback((userData: User, token: string, rememberMe: boolean = false) => {
+    localStorage.setItem('access_token', token);
+    localStorage.setItem('user', JSON.stringify(userData));
+
+    // Cookie expiration based on remember me
+    const maxAge = rememberMe ? 60 * 60 * 24 * 30 : 60 * 60 * 24; // 30 days or 1 day
+    document.cookie = `access_token=${token}; path=/; max-age=${maxAge}`;
+
+    setUser(userData);
+  }, []);
+
   // Login function - calls real API to get JWT
-  const login = React.useCallback(async (email: string, password: string) => {
+  const login = React.useCallback(async (email: string, password: string, rememberMe: boolean = false) => {
     setIsLoading(true);
     try {
       const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password, remember_me: rememberMe }),
       });
 
       const data = await response.json();
@@ -82,15 +98,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
 
       const { user: userData, token } = data;
+      storeAuthData(userData, token, rememberMe);
 
-      // Store in localStorage
-      localStorage.setItem('access_token', token);
-      localStorage.setItem('user', JSON.stringify(userData));
-
-      // Also set cookie for middleware (server-side) access
-      document.cookie = `access_token=${token}; path=/; max-age=${60 * 60 * 24 * 7}`; // 7 days
-
-      setUser(userData);
       success('Welcome back! Logged in successfully.');
       router.push('/dashboard');
     } catch (err) {
@@ -100,7 +109,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     } finally {
       setIsLoading(false);
     }
-  }, [router, success, showError]);
+  }, [router, success, showError, storeAuthData]);
 
   // Register function - calls real API to create user and get JWT
   const register = React.useCallback(async (name: string, email: string, password: string) => {
@@ -119,15 +128,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
 
       const { user: userData, token } = data;
+      storeAuthData(userData, token, false);
 
-      // Store in localStorage
-      localStorage.setItem('access_token', token);
-      localStorage.setItem('user', JSON.stringify(userData));
-
-      // Also set cookie for middleware (server-side) access
-      document.cookie = `access_token=${token}; path=/; max-age=${60 * 60 * 24 * 7}`; // 7 days
-
-      setUser(userData);
       success('Account created successfully!');
       router.push('/dashboard');
     } catch (err) {
@@ -137,7 +139,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     } finally {
       setIsLoading(false);
     }
-  }, [router, success, showError]);
+  }, [router, success, showError, storeAuthData]);
 
   // Logout function
   const logout = React.useCallback(async () => {
@@ -156,6 +158,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
     router.push('/');
   }, [router, success]);
 
+  // OAuth login - shows message that it's not configured yet
+  const loginWithOAuth = React.useCallback((provider: 'google' | 'github') => {
+    showError(`${provider.charAt(0).toUpperCase() + provider.slice(1)} sign-in is not configured yet.`);
+  }, [showError]);
+
   const value = React.useMemo<AuthContextValue>(
     () => ({
       user,
@@ -164,8 +171,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
       login,
       register,
       logout,
+      loginWithOAuth,
     }),
-    [user, isLoading, login, register, logout]
+    [user, isLoading, login, register, logout, loginWithOAuth]
   );
 
   return (

@@ -59,11 +59,11 @@ export default function LogoutPage() {
   }, []);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-neutral-50 dark:bg-neutral-900">
-      <div className="text-center p-8 bg-white dark:bg-neutral-800 rounded-lg shadow-lg">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4" />
-        <p className="text-lg font-medium text-neutral-900 dark:text-white">Logging out...</p>
-        <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-2">{status}</p>
+    <div className="min-h-screen flex items-center justify-center bg-muted">
+      <div className="text-center p-8 bg-card rounded-lg shadow-lg border border-border">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500 mx-auto mb-4" />
+        <p className="text-lg font-medium text-foreground">Logging out...</p>
+        <p className="text-sm text-muted-foreground mt-2">{status}</p>
       </div>
     </div>
   );

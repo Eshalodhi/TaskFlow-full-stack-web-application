@@ -23,38 +23,11 @@ interface TaskListProps {
 }
 
 // =============================================================================
-// Animation Variants
+// Animation Config
 // =============================================================================
 
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.05,
-      delayChildren: 0.1,
-    },
-  },
-};
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 16 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      duration: 0.3,
-      ease: 'easeOut' as const,
-    },
-  },
-  exit: {
-    opacity: 0,
-    x: -20,
-    transition: {
-      duration: 0.2,
-    },
-  },
-};
+// Custom cubic-bezier for smooth, natural motion
+const smoothEasing = [0.4, 0, 0.2, 1] as const;
 
 // =============================================================================
 // Loading Skeleton
@@ -101,21 +74,22 @@ export function TaskList({
     );
   }
 
-  // Render task list with staggered animations
+  // Render task list with animations
   return (
-    <motion.div
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
-      className="space-y-3"
-    >
+    <div className="space-y-3">
       <AnimatePresence mode="popLayout">
-        {tasks.map((task) => (
+        {tasks.map((task, index) => (
           <motion.div
             key={task.id}
-            variants={itemVariants}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            transition={{
+              duration: 0.3,
+              ease: smoothEasing,
+              delay: index < 10 ? index * 0.05 : 0, // Stagger only first 10 on initial load
+            }}
             layout
-            layoutId={`task-${task.id}`}
           >
             <TaskCard
               task={task}
@@ -126,7 +100,7 @@ export function TaskList({
           </motion.div>
         ))}
       </AnimatePresence>
-    </motion.div>
+    </div>
   );
 }
 

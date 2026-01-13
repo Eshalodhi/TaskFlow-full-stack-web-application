@@ -29,7 +29,9 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
     },
     ref
   ) => {
-    const inputId = id || React.useId();
+    // Always call useId unconditionally to satisfy React rules
+    const generatedId = React.useId();
+    const inputId = id || generatedId;
     const [isFocused, setIsFocused] = React.useState(false);
     const [hasValue, setHasValue] = React.useState(false);
 

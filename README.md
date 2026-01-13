@@ -1,4 +1,4 @@
-# Todo Full-Stack Web Application
+# TaskFlow - Full-Stack Task Management Application
 
 A modern, full-stack task management application built with Next.js and FastAPI.
 
@@ -10,12 +10,24 @@ A modern, full-stack task management application built with Next.js and FastAPI.
 
 ## Features
 
-- **User Authentication** - Secure JWT-based authentication with login/register
-- **Task Management** - Full CRUD operations for tasks
+### Authentication
+- **JWT-based Authentication** - Secure login and registration
+- **Remember Me** - Extended session duration (30 days vs 1 day)
+- **OAuth Ready** - Google and GitHub sign-in buttons (requires configuration)
+- **Password Reset** - Forgot password flow with email reset link
+- **Terms & Privacy** - Checkbox validation on signup
+
+### Task Management
+- **Full CRUD Operations** - Create, read, update, and delete tasks
 - **Real-time Updates** - Optimistic UI updates for instant feedback
+- **Task Statistics** - Track total, pending, and completed tasks
+- **Filter & Sort** - Filter by status, sort by date or title
+
+### User Experience
 - **Dark Mode** - Toggle between light and dark themes
 - **Responsive Design** - Works on desktop and mobile devices
 - **Modern UI** - Beautiful animations with Framer Motion
+- **Toast Notifications** - Feedback for all user actions
 
 ## Tech Stack
 
@@ -163,18 +175,25 @@ A modern, full-stack task management application built with Next.js and FastAPI.
 
 ## Environment Variables
 
-### Backend
-| Variable | Description |
-|----------|-------------|
-| `DATABASE_URL` | PostgreSQL connection string |
-| `JWT_SECRET_KEY` | Secret key for JWT signing |
-| `JWT_ALGORITHM` | Algorithm for JWT (default: HS256) |
-| `ACCESS_TOKEN_EXPIRE_MINUTES` | Token expiration time |
+### Backend (.env)
+| Variable | Description | Required |
+|----------|-------------|----------|
+| `DATABASE_URL` | PostgreSQL connection string | Yes |
+| `BETTER_AUTH_SECRET` | Secret key for JWT signing | Yes |
+| `CORS_ORIGINS` | Allowed frontend origins (comma-separated) | No |
+| `ENVIRONMENT` | `development` or `production` | No |
+| `GOOGLE_CLIENT_ID` | Google OAuth client ID | No |
+| `GOOGLE_CLIENT_SECRET` | Google OAuth client secret | No |
+| `GITHUB_CLIENT_ID` | GitHub OAuth client ID | No |
+| `GITHUB_CLIENT_SECRET` | GitHub OAuth client secret | No |
+| `FRONTEND_URL` | Frontend URL for OAuth redirects | No |
 
-### Frontend
-| Variable | Description |
-|----------|-------------|
-| `NEXT_PUBLIC_API_URL` | Backend API URL |
+### Frontend (.env.local)
+| Variable | Description | Required |
+|----------|-------------|----------|
+| `NEXT_PUBLIC_API_URL` | Backend API URL | Yes |
+| `BACKEND_URL` | Backend URL for server-side calls | Yes |
+| `BETTER_AUTH_SECRET` | Must match backend secret | Yes |
 
 ## Contributing
 

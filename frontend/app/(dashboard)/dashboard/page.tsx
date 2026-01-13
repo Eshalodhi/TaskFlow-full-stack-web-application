@@ -160,23 +160,23 @@ function FilterTabs({ filter, onFilterChange, counts }: FilterTabsProps) {
   ];
 
   return (
-    <div className="flex gap-1 p-1 bg-neutral-100 dark:bg-[#0F172A] rounded-lg border border-neutral-200 dark:border-[#334155]">
+    <div className="flex gap-1 p-1 bg-muted rounded-lg border border-border">
       {options.map((option) => (
         <button
           key={option.value}
           onClick={() => onFilterChange(option.value)}
           className={`px-3 sm:px-4 py-2 text-sm font-medium rounded-md transition-all flex items-center gap-2 ${
             filter === option.value
-              ? 'bg-white dark:bg-[#334155] text-neutral-900 dark:text-white shadow-sm'
-              : 'text-neutral-500 dark:text-[#94A3B8] hover:text-neutral-900 dark:hover:text-white'
+              ? 'bg-card text-foreground shadow-sm'
+              : 'text-muted-foreground hover:text-foreground'
           }`}
         >
           {option.label}
           <span
             className={`text-xs px-1.5 py-0.5 rounded-full ${
               filter === option.value
-                ? 'bg-primary-100 dark:bg-primary-500/20 text-primary-600 dark:text-primary-400'
-                : 'bg-neutral-200 dark:bg-[#475569] text-neutral-600 dark:text-[#94A3B8]'
+                ? 'bg-primary-100 text-primary-600'
+                : 'bg-muted text-muted-foreground'
             }`}
           >
             {option.count}
@@ -322,7 +322,7 @@ export default function DashboardPage() {
         <TaskStatsGrid stats={stats} isLoading={isLoading} className="mb-8" />
 
         {/* Task List Section */}
-        <div className="bg-white dark:bg-[#1E293B] rounded-xl p-6 border border-neutral-200 dark:border-[#334155] shadow-sm dark:shadow-none">
+        <div className="bg-card rounded-xl p-6 border border-border shadow-sm">
           {/* Header */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
             {/* Filter Tabs */}

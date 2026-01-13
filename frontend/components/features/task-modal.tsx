@@ -192,33 +192,51 @@ export function DeleteTaskModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-error-100 dark:bg-error-900/30 flex items-center justify-center">
-              <AlertTriangle className="w-5 h-5 text-error-600" />
+      <DialogContent className="sm:max-w-md p-0 overflow-hidden">
+        {/* Header with danger gradient accent */}
+        <div className="relative">
+          <div className="absolute inset-0 bg-gradient-to-br from-error-500/10 via-transparent to-error-600/5" />
+          <DialogHeader className="relative px-6 pt-6 pb-4">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-error-500 to-error-600 flex items-center justify-center shadow-lg shadow-error-500/25">
+                <motion.div
+                  initial={{ scale: 0, rotate: -180 }}
+                  animate={{ scale: 1, rotate: 0 }}
+                  transition={{ type: 'spring', stiffness: 200, delay: 0.1 }}
+                >
+                  <AlertTriangle className="w-6 h-6 text-white" />
+                </motion.div>
+              </div>
+              <div>
+                <DialogTitle className="text-xl font-bold">Delete Task</DialogTitle>
+                <DialogDescription className="text-sm mt-0.5">
+                  This action cannot be undone.
+                </DialogDescription>
+              </div>
             </div>
-            <div>
-              <DialogTitle>Delete Task</DialogTitle>
-              <DialogDescription>
-                This action cannot be undone.
-              </DialogDescription>
-            </div>
-          </div>
-        </DialogHeader>
-
-        <div className="py-4">
-          <p className="text-foreground">
-            Are you sure you want to delete{' '}
-            <span className="font-medium">&ldquo;{task.title}&rdquo;</span>?
-          </p>
+          </DialogHeader>
         </div>
 
-        <div className="flex items-center justify-end gap-3">
+        {/* Content */}
+        <div className="px-6 py-5">
+          <div className="p-4 rounded-lg bg-muted border border-border">
+            <p className="text-foreground text-sm leading-relaxed">
+              Are you sure you want to delete{' '}
+              <span className="font-semibold text-error-600">
+                &ldquo;{task.title}&rdquo;
+              </span>
+              ? This will permanently remove the task from your list.
+            </p>
+          </div>
+        </div>
+
+        {/* Footer with buttons */}
+        <div className="px-6 pb-6 pt-2 flex items-center justify-end gap-3">
           <Button
-            variant="ghost"
+            variant="outline"
             onClick={onClose}
             disabled={isDeleting}
+            className="min-w-[100px]"
           >
             Cancel
           </Button>
@@ -226,6 +244,7 @@ export function DeleteTaskModal({
             variant="danger"
             onClick={handleConfirm}
             loading={isDeleting}
+            className="min-w-[120px]"
           >
             Delete Task
           </Button>

@@ -80,8 +80,8 @@
   --radius-full: 9999px;
 
   /* Glassmorphism */
-  --glass-background: rgb(255 255 255 / 0.8);
-  --glass-border: rgb(255 255 255 / 0.2);
+  --glass-background: rgb(255 255 255 / 0.85);
+  --glass-border: rgb(0 0 0 / 0.08);
 }
 
 /* Dark Mode Variables - Professional Dark Theme */
@@ -338,6 +338,49 @@ textarea:focus-visible,
   background: var(--neutral-500);
 }
 
+/* Card Transition Utilities */
+.card-transition {
+  transition-property: transform, opacity, box-shadow, border-color;
+  transition-duration: 300ms;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform, opacity;
+}
+
+.card-transition-fast {
+  transition-property: transform, opacity, box-shadow, border-color;
+  transition-duration: 200ms;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform, opacity;
+}
+
+/* Card enter/exit states for CSS-only transitions */
+.card-enter {
+  opacity: 0;
+  transform: translateY(12px) scale(0.98);
+}
+
+.card-enter-active {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.card-exit {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.card-exit-active {
+  opacity: 0;
+  transform: translateY(-8px) scale(0.96);
+}
+
+/* GPU-accelerated fade/slide utility */
+.gpu-accelerated {
+  will-change: transform, opacity;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
 /* Reduced Motion */
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -347,6 +390,16 @@ textarea:focus-visible,
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+
+  .card-transition,
+  .card-transition-fast {
+    transition: none !important;
+    will-change: auto;
+  }
+
+  .gpu-accelerated {
+    will-change: auto;
   }
 }
 

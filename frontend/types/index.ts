@@ -9,6 +9,7 @@ export interface User {
   id: string;           // UUID from Better Auth
   email: string;        // Unique email address
   name: string;         // Display name
+  oauth_provider?: string | null;  // "google", "github", or null
 }
 
 /**
@@ -148,9 +149,10 @@ export interface AuthContextValue {
   user: User | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string, rememberMe?: boolean) => Promise<void>;
   register: (name: string, email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
+  loginWithOAuth: (provider: 'google' | 'github') => void;
 }
 
 // =============================================================================

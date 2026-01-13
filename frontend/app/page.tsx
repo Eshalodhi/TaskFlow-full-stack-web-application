@@ -48,7 +48,7 @@ function Header() {
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      className="fixed top-0 left-0 right-0 z-50 glass border-b border-white/10"
+      className="fixed top-0 left-0 right-0 z-50 glass border-b border-border"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
@@ -186,7 +186,7 @@ const features = [
 
 function FeaturesSection() {
   return (
-    <section id="features" className="py-24 bg-neutral-50 dark:bg-[#0F172A]">
+    <section id="features" className="py-24 bg-muted">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial="initial"
@@ -203,7 +203,7 @@ function FeaturesSection() {
           </motion.h2>
           <motion.p
             variants={staggerItem}
-            className="max-w-2xl mx-auto text-lg text-neutral-600 dark:text-[#94A3B8]"
+            className="max-w-2xl mx-auto text-lg text-muted-foreground"
           >
             Powerful features to help you stay organized and focused on what matters.
           </motion.p>
@@ -222,15 +222,15 @@ function FeaturesSection() {
               variants={staggerItem}
               whileHover={{ y: -8, scale: 1.02 }}
               transition={{ type: 'spring' as const, stiffness: 300 }}
-              className="group p-8 rounded-2xl bg-white dark:bg-[#1E293B] border border-neutral-200 dark:border-[#334155] shadow-md dark:shadow-2xl dark:shadow-black/20 hover:border-primary-400 dark:hover:border-primary-500 hover:shadow-xl dark:hover:shadow-primary-500/10 transition-all duration-300"
+              className="group p-8 rounded-2xl bg-card border border-border shadow-md hover:border-primary-400 hover:shadow-xl transition-all duration-300"
             >
-              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary-500 to-primary-600 dark:from-primary-500 dark:to-secondary-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg shadow-primary-500/25">
+              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg shadow-primary-500/25">
                 <feature.icon className="w-7 h-7 text-white" />
               </div>
               <h3 className="text-xl font-semibold text-foreground mb-3">
                 {feature.title}
               </h3>
-              <p className="text-neutral-600 dark:text-[#94A3B8] leading-relaxed">
+              <p className="text-muted-foreground leading-relaxed">
                 {feature.description}
               </p>
             </motion.div>
@@ -284,7 +284,7 @@ function CTASection() {
 
 function Footer() {
   return (
-    <footer className="py-8 sm:py-12 border-t border-neutral-200 dark:border-[#334155]">
+    <footer className="py-8 sm:py-12 border-t border-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col items-center gap-6 md:flex-row md:justify-between">
           {/* Logo */}
@@ -296,7 +296,7 @@ function Footer() {
           </div>
 
           {/* Links */}
-          <nav className="flex items-center gap-4 sm:gap-6 text-sm text-neutral-500 dark:text-[#94A3B8]">
+          <nav className="flex items-center gap-4 sm:gap-6 text-sm text-muted-foreground">
             <Link href="#features" className="hover:text-foreground transition-colors">
               Features
             </Link>
@@ -314,7 +314,7 @@ function Footer() {
               href="https://github.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-neutral-400 dark:text-[#64748B] hover:text-foreground transition-colors"
+              className="text-muted-foreground hover:text-foreground transition-colors"
             >
               <Github className="w-5 h-5" />
             </a>
@@ -322,14 +322,14 @@ function Footer() {
               href="https://twitter.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-neutral-400 dark:text-[#64748B] hover:text-foreground transition-colors"
+              className="text-muted-foreground hover:text-foreground transition-colors"
             >
               <Twitter className="w-5 h-5" />
             </a>
           </div>
         </div>
 
-        <div className="mt-6 sm:mt-8 text-center text-xs sm:text-sm text-neutral-400 dark:text-[#64748B]">
+        <div className="mt-6 sm:mt-8 text-center text-xs sm:text-sm text-muted-foreground">
           <p>&copy; {new Date().getFullYear()} TaskFlow. Built for Panaversity Hackathon Phase II.</p>
         </div>
       </div>

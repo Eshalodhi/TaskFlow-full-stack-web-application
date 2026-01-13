@@ -79,10 +79,14 @@ function DropdownMenu({ isOpen, onClose, onEdit, onDelete }: DropdownMenuProps) 
       {isOpen && (
         <motion.div
           ref={menuRef}
-          initial={{ opacity: 0, scale: 0.95, y: -5 }}
+          initial={{ opacity: 0, scale: 0.95, y: -4 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, y: -5 }}
-          transition={{ duration: 0.1 }}
+          exit={{ opacity: 0, scale: 0.95, y: -4 }}
+          transition={{
+            duration: 0.2,
+            ease: [0.4, 0, 0.2, 1],
+          }}
+          style={{ willChange: 'transform, opacity' }}
           className="absolute right-0 top-full mt-1 w-36 rounded-lg bg-background border border-border shadow-lg z-50 overflow-hidden"
         >
           <button
@@ -139,10 +143,13 @@ function AnimatedCheckbox({ checked, onClick, disabled }: AnimatedCheckboxProps)
       <AnimatePresence mode="wait">
         {checked && (
           <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            exit={{ scale: 0 }}
-            transition={{ duration: 0.15, ease: 'easeOut' }}
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0, opacity: 0 }}
+            transition={{
+              duration: 0.2,
+              ease: [0.4, 0, 0.2, 1],
+            }}
           >
             <CheckCircle2 className="w-3.5 h-3.5 text-white" />
           </motion.div>
@@ -152,6 +159,10 @@ function AnimatedCheckbox({ checked, onClick, disabled }: AnimatedCheckboxProps)
             initial={{ opacity: 0 }}
             animate={{ opacity: 0.5 }}
             exit={{ opacity: 0 }}
+            transition={{
+              duration: 0.2,
+              ease: [0.4, 0, 0.2, 1],
+            }}
             className="group-hover:opacity-100"
           >
             <Circle className="w-3 h-3 text-neutral-400" />
@@ -161,6 +172,20 @@ function AnimatedCheckbox({ checked, onClick, disabled }: AnimatedCheckboxProps)
     </button>
   );
 }
+
+// =============================================================================
+// Animation Config
+// =============================================================================
+
+// Smooth cubic-bezier easing for natural motion
+const smoothEasing = [0.4, 0, 0.2, 1] as const;
+
+const cardTransition = {
+  layout: {
+    duration: 0.3,
+    ease: smoothEasing,
+  },
+};
 
 // =============================================================================
 // TaskCard Component
@@ -187,11 +212,14 @@ export function TaskCard({
   return (
     <motion.article
       layout
+      transition={cardTransition}
+      style={{ willChange: 'transform, opacity' }}
       className={cn(
         'group relative p-4 rounded-lg',
-        'bg-white dark:bg-[#0F172A] border border-neutral-200 dark:border-[#334155]',
-        'hover:border-primary-300 dark:hover:border-primary-500',
-        'shadow-sm hover:shadow-md dark:shadow-none dark:hover:shadow-lg dark:hover:shadow-black/20 transition-all duration-200',
+        'bg-card border border-border',
+        'hover:border-primary-300',
+        'shadow-sm hover:shadow-md',
+        'transition-[border-color,box-shadow] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]',
         task.is_completed && 'opacity-60',
         className
       )}

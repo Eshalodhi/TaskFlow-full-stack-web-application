@@ -75,14 +75,14 @@ function StatCard({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay, duration: 0.3 }}
-      className="p-6 rounded-xl bg-white dark:bg-[#1E293B] border border-neutral-200 dark:border-[#334155] shadow-sm hover:shadow-lg dark:hover:shadow-xl dark:hover:shadow-black/20 transition-all"
+      className="p-6 rounded-xl bg-card border border-border shadow-sm hover:shadow-lg transition-all"
     >
       <div className="flex items-center gap-4">
         <div className={cn('p-3 rounded-lg shadow-lg', bgColor)}>
           <Icon className={cn('w-6 h-6', color)} />
         </div>
         <div>
-          <p className="text-sm text-neutral-500 dark:text-[#94A3B8] font-medium">{label}</p>
+          <p className="text-sm text-muted-foreground font-medium">{label}</p>
           <p className="text-2xl font-bold text-foreground">
             <AnimatedCounter value={value} />
           </p>
@@ -98,12 +98,12 @@ function StatCard({
 
 function SkeletonStatCard() {
   return (
-    <div className="p-6 rounded-xl bg-white dark:bg-[#1E293B] border border-neutral-200 dark:border-[#334155] shadow-sm animate-pulse">
+    <div className="p-6 rounded-xl bg-card border border-border shadow-sm animate-pulse">
       <div className="flex items-center gap-4">
-        <div className="w-12 h-12 rounded-lg bg-neutral-100 dark:bg-[#334155]" />
+        <div className="w-12 h-12 rounded-lg bg-muted" />
         <div className="space-y-2">
-          <div className="w-16 h-4 rounded bg-neutral-100 dark:bg-[#334155]" />
-          <div className="w-10 h-6 rounded bg-neutral-100 dark:bg-[#334155]" />
+          <div className="w-16 h-4 rounded bg-muted" />
+          <div className="w-10 h-6 rounded bg-muted" />
         </div>
       </div>
     </div>
