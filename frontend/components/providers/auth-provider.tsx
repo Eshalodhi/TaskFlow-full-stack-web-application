@@ -191,15 +191,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
       const payload = JSON.parse(window.atob(base64));
 
-      // Store the token
-      localStorage.setItem('token', token);
-
-      // Set user from token payload
-      setUser({
+      // Create user object from token payload
+      const userData: User = {
         id: payload.sub,
         email: payload.email,
         name: payload.name || payload.email.split('@')[0],
-      });
+      };
+
+      // Use storeAuthData to properly persist auth (fixes key mismatch)
+      storeAuthData(userData, token, true);
 
       success('Signed in successfully!');
       router.push('/dashboard');
@@ -207,7 +207,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       showError('Failed to complete sign in. Please try again.');
       throw error;
     }
-  }, [router, success, showError]);
+  }, [router, success, showError, storeAuthData]);
 
   const value = React.useMemo<AuthContextValue>(
     () => ({

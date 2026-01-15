@@ -245,9 +245,10 @@ async def google_oauth_callback(
         )
 
         if token_response.status_code != 200:
+            error_detail = token_response.text
             raise HTTPException(
                 status_code=400,
-                detail="Failed to exchange authorization code"
+                detail=f"Failed to exchange authorization code: {error_detail}"
             )
 
         token_data = token_response.json()
